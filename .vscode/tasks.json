@@ -1,0 +1,38 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "options": {
+        "env": {
+            "BOOST_ROOT":"/home/mi/software/boost_1_68_0"
+        }
+    },
+    "tasks": [
+        {
+            "label": "cmake-debug",
+            "type": "shell",
+            "command": "cmake -DCMAKE_BUILD_TYPE=Debug ..",
+            "options": {
+                "cwd": "cmake-build-debug"
+            },
+            "args": [
+                // Ask msbuild to generate full paths for file names.
+            ],
+            "group": "build",
+            "presentation": {
+                // Reveal the output only if unrecognized errors occur.
+                "reveal": "silent"
+            }
+        },
+        {
+            "label": "make-debug",
+            "type": "shell",
+            "command":"make",
+            "group": "build",
+            "dependsOn":"cmake-debug",
+            "options": {
+                "cwd": "cmake-build-debug"
+            }
+        },
+    ]
+}
