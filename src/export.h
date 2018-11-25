@@ -10,7 +10,7 @@
 using namespace compound_doc_io;
 extern "C"
 {
-DLL_EXPORT ComDocIO *ReadComDocFile(const char *fileName);
+DLL_EXPORT ComDocIO *ReadComDocFile(const char *file_name);
 DLL_EXPORT void ReleaseComDocFile(ComDocIO *io);
 DLL_EXPORT FileBlock *ReadFromPath(ComDocIO *io, const char *path);
 DLL_EXPORT uint32_t GetBlockLength(FileBlock *block);

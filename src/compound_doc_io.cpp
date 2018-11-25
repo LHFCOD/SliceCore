@@ -18,8 +18,8 @@ FileBlock *ComDocIO::ReadFromPath(std::string path) {
     std::vector<std::string> sub_path_array;
     std::string sub_path = path.substr(1);
     boost::split(sub_path_array, sub_path, boost::is_any_of("/"));
-    Directory last_path_directory = ReadDirectory(0);
-    for (std::string &child_path : sub_path_array) {
+    auto last_path_directory = ReadDirectory(0);
+    for (auto &child_path : sub_path_array) {
         if (last_path_directory.root_DID < 0) {
             throw std::logic_error("last_path_directory.root_DID less than zero");
         }
@@ -35,7 +35,7 @@ FileBlock *ComDocIO::ReadFromPath(std::string path) {
 }
 
 Directory ComDocIO::FindDirectoryFromName(uint32_t root_DID, std::string name) {
-    Directory directory = ReadDirectory(root_DID);
+    auto directory = ReadDirectory(root_DID);
     std::string entry;
     for (int i = 0; i < directory.name_size; i++) {
         if (i % 2 == 0 && directory.entry_name[i] != '\0') {
@@ -49,14 +49,14 @@ Directory ComDocIO::FindDirectoryFromName(uint32_t root_DID, std::string name) {
         if (directory.left_DID < 0) {
             throw std::logic_error("Can not find specified directory");
         } else {
-            Directory dir = FindDirectoryFromName((uint32_t) directory.left_DID, name);
+            auto dir = FindDirectoryFromName((uint32_t) directory.left_DID, name);
             return dir;
         }
     } else {
         if (directory.right_DID < 0) {
             throw std::logic_error("Can not find specified directory");
         } else {
-            Directory dir = FindDirectoryFromName((uint32_t) directory.right_DID, name);
+            auto dir = FindDirectoryFromName((uint32_t) directory.right_DID, name);
             return dir;
         }
     }
@@ -69,50 +69,50 @@ ComDocIO::~ComDocIO() {
 }
 
 void ComDocIO::ConfigureHeader() {
-    if (dat != nullptr) {
+    if (kFilePtr_ != nullptr) {
         ushort offset = 0;
-        memcpy(header_.file_id, dat, sizeof(header_.file_id));
+        memcpy(header_.file_id, kFilePtr_, sizeof(header_.file_id));
         offset += sizeof(header_.file_id);
-        ptr = const_cast<char *>(dat) + offset;
-        memcpy(header_.unique_id, ptr, sizeof(header_.unique_id));
+        ptr_ = const_cast<char *>(kFilePtr_) + offset;
+        memcpy(header_.unique_id, ptr_, sizeof(header_.unique_id));
         offset += sizeof(header_.unique_id);
-        header_.revision_number = GET_UINT16(dat, offset);
+        header_.revision_number = GET_UINT16(kFilePtr_, offset);
         offset += sizeof(uint16_t);
-        header_.version_number = GET_UINT16(dat, offset);
+        header_.version_number = GET_UINT16(kFilePtr_, offset);
         offset += sizeof(uint16_t);
-        header_.byte_order = GET_UINT16(dat, offset);
+        header_.byte_order = GET_UINT16(kFilePtr_, offset);
         offset += sizeof(uint16_t);
         if (header_.byte_order != 0xFFFE) {
             throw std::logic_error("The current file is not in proper byte order.");
         }
-        header_.sector_size = MAKE_UI32(1) << GET_UINT16(dat, offset);
+        header_.sector_size = MAKE_UI32(1) << GET_UINT16(kFilePtr_, offset);
         offset += sizeof(uint16_t);
         if (header_.sector_size != 512) {
             throw std::logic_error("The sector size is not 512.");
         }
-        header_.short_sector_size = MAKE_UI32(1) << GET_UINT16(dat, offset);
+        header_.short_sector_size = MAKE_UI32(1) << GET_UINT16(kFilePtr_, offset);
         offset += sizeof(uint16_t);
         offset += 10;
-        header_.sector_number = GET_UINT32(dat, offset);
+        header_.sector_number = GET_UINT32(kFilePtr_, offset);
         offset += sizeof(uint32_t);
-        header_.directory_first_sid = GET_INT32(dat, offset);
+        header_.directory_first_sid = GET_INT32(kFilePtr_, offset);
         offset += sizeof(int32_t);
         offset += 4;
-        header_.standard_minimum_size = GET_UINT32(dat, offset);
+        header_.standard_minimum_size = GET_UINT32(kFilePtr_, offset);
         offset += sizeof(uint32_t);
-        header_.SSAT_first_sid = GET_INT32(dat, offset);
+        header_.SSAT_first_sid = GET_INT32(kFilePtr_, offset);
         offset += sizeof(int32_t);
-        header_.SSAT_sector_size = GET_UINT32(dat, offset);
+        header_.SSAT_sector_size = GET_UINT32(kFilePtr_, offset);
         offset += sizeof(uint32_t);
-        header_.MSAT_first_sid = GET_INT32(dat, offset);
+        header_.MSAT_first_sid = GET_INT32(kFilePtr_, offset);
         offset += sizeof(int32_t);
-        header_.MSAT_sector_size = GET_UINT32(dat, offset);
+        header_.MSAT_sector_size = GET_UINT32(kFilePtr_, offset);
         offset += sizeof(uint32_t);
-        ptr = const_cast<char *>(dat) + offset;
-        memcpy(header_.MSAT_first_part, ptr, sizeof(header_.MSAT_first_part));
+        ptr_ = const_cast<char *>(kFilePtr_) + offset;
+        memcpy(header_.MSAT_first_part, ptr_, sizeof(header_.MSAT_first_part));
         sid_count_per_sector_ = header_.sector_size / 4 - 1;
     } else {
-        throw std::logic_error("dat is nullptr");
+        throw std::logic_error("kFilePtr_ is nullptr");
     }
 }
 
@@ -121,7 +121,7 @@ void ComDocIO::ReadFile(std::string file_path) {
     params.path = std::move(file_path);
     params.flags = boost::iostreams::mapped_file::mapmode::readonly;
     this->file.open(params);
-    dat = this->file.data();
+    kFilePtr_ = this->file.data();
 }
 
 Directory ComDocIO::ReadDirectory(uint32_t DID) {
@@ -134,32 +134,32 @@ Directory ComDocIO::ReadDirectory(uint32_t DID) {
     }
     current_sid = FindSID(header_.directory_first_sid, storage_sector_order);
 
-    ptr = const_cast<char *>(dat) + (current_sid + 1) * header_.sector_size + offset;
-    memcpy(directory.entry_name, ptr, sizeof(directory.entry_name));
+    ptr_ = const_cast<char *>(kFilePtr_) + (current_sid + 1) * header_.sector_size + offset;
+    memcpy(directory.entry_name, ptr_, sizeof(directory.entry_name));
     offset = sizeof(directory.entry_name) / sizeof(*directory.entry_name);
-    directory.name_size = GET_UINT16(ptr, offset);
+    directory.name_size = GET_UINT16(ptr_, offset);
     offset += sizeof(directory.name_size);
-    directory.entry_type = GET_BYTE(ptr, offset);
+    directory.entry_type = GET_BYTE(ptr_, offset);
     offset += sizeof(directory.entry_type);
-    directory.node_color = GET_BYTE(ptr, offset);
+    directory.node_color = GET_BYTE(ptr_, offset);
     offset += sizeof(directory.node_color);
-    directory.left_DID = GET_INT32(ptr, offset);
+    directory.left_DID = GET_INT32(ptr_, offset);
     offset += sizeof(directory.left_DID);
-    directory.right_DID = GET_INT32(ptr, offset);
+    directory.right_DID = GET_INT32(ptr_, offset);
     offset += sizeof(directory.right_DID);
-    directory.root_DID = GET_INT32(ptr, offset);
+    directory.root_DID = GET_INT32(ptr_, offset);
     offset += sizeof(directory.root_DID);
-    memcpy(directory.unique_ID, ptr, sizeof(directory.unique_ID));
+    memcpy(directory.unique_ID, ptr_, sizeof(directory.unique_ID));
     offset += sizeof(directory.unique_ID) / sizeof(*directory.unique_ID);
-    directory.user_tag = GET_INT32(ptr, offset);
+    directory.user_tag = GET_INT32(ptr_, offset);
     offset += sizeof(directory.user_tag);
-    directory.entry_create_timestamp = GET_INT64(ptr, offset);
+    directory.entry_create_timestamp = GET_INT64(ptr_, offset);
     offset += sizeof(directory.entry_create_timestamp);
-    directory.entry_last_modify_timestamp = GET_INT64(ptr, offset);
+    directory.entry_last_modify_timestamp = GET_INT64(ptr_, offset);
     offset += sizeof(directory.entry_last_modify_timestamp);
-    directory.entry_first_sid = GET_INT32(ptr, offset);
+    directory.entry_first_sid = GET_INT32(ptr_, offset);
     offset += sizeof(directory.entry_first_sid);
-    directory.stream_size = GET_UINT32(ptr, offset);
+    directory.stream_size = GET_UINT32(ptr_, offset);
     directory.DID = DID;
     return directory;
 }
@@ -172,17 +172,17 @@ int32_t ComDocIO::FindNextSID(int32_t sid) {
     int32_t MSAT_location = sid / (header_.sector_size / 4);
     int32_t SAT_offset = sid % (header_.sector_size / 4);
     if (MSAT_location < 109) {
-        ptr = const_cast<char *>(dat) + header_.MSAT_first_part[MSAT_location] * header_.sector_size +
+        ptr_ = const_cast<char *>(kFilePtr_) + header_.MSAT_first_part[MSAT_location] * header_.sector_size +
               header_.sector_size;
-        next_sid = GET_INT32(ptr, SAT_offset * 4);
+        next_sid = GET_INT32(ptr_, SAT_offset * 4);
     } else {
         int32_t MSAT_order = (MSAT_location - 109) / sid_count_per_sector_;
         int32_t MSAT_offset = (MSAT_location - 109) % sid_count_per_sector_;
-        ptr = const_cast<char *>(dat) + MSAT_fisrt_sid_array_.at(MSAT_order) * header_.sector_size +
+        ptr_ = const_cast<char *>(kFilePtr_) + MSAT_fisrt_sid_array_.at(MSAT_order) * header_.sector_size +
               header_.sector_size;
-        int32_t entry_sid = GET_INT32(ptr, MSAT_offset * 4);
-        ptr = const_cast<char *>(dat) + entry_sid * header_.sector_size + header_.sector_size;
-        next_sid = GET_INT32(ptr, SAT_offset * 4);
+        int32_t entry_sid = GET_INT32(ptr_, MSAT_offset * 4);
+        ptr_ = const_cast<char *>(kFilePtr_) + entry_sid * header_.sector_size + header_.sector_size;
+        next_sid = GET_INT32(ptr_, SAT_offset * 4);
     }
     return next_sid;
 }
@@ -199,8 +199,8 @@ int32_t ComDocIO::FindSID(int32_t sid, uint32_t offset = 1) {
 
 void ComDocIO::ConfigureSSATFirstSID() //
 {
-    if (dat == nullptr) {
-        throw std::logic_error("dat is nullptr");
+    if (kFilePtr_ == nullptr) {
+        throw std::logic_error("kFilePtr_ is nullptr");
     }
     int32_t current_sid = header_.SSAT_first_sid;
     while (current_sid > 0) {
@@ -225,12 +225,12 @@ int32_t ComDocIO::FindNextShortSID(int32_t ssid) {
     if (SSAT_first_sid_array_.empty()) {
         throw std::logic_error("SSAT_first_sid_array_ is empty");
     }
-    int32_t NextSID;
+    int32_t nex_sid;
     int32_t serial_number = ssid / (header_.sector_size / 4);
     int32_t off = ssid % (header_.sector_size / 4);
-    ptr = const_cast<char *>(dat) + SSAT_first_sid_array_.at(serial_number) * header_.sector_size + header_.sector_size;
-    NextSID = GET_INT32(ptr, off * 4);
-    return NextSID;
+    ptr_ = const_cast<char *>(kFilePtr_) + SSAT_first_sid_array_.at(serial_number) * header_.sector_size + header_.sector_size;
+    nex_sid = GET_INT32(ptr_, off * 4);
+    return nex_sid;
 }
 
 char *ComDocIO::GetAddressFromShortSID(int32_t ssid) {
@@ -239,9 +239,9 @@ char *ComDocIO::GetAddressFromShortSID(int32_t ssid) {
     }
     int32_t serial_number = ssid * header_.short_sector_size / header_.sector_size;
     int32_t offset = ssid * header_.short_sector_size % header_.sector_size;
-    ptr = const_cast<char *>(dat) + short_stream_sid_array_[serial_number] * header_.sector_size + header_.sector_size +
+    ptr_ = const_cast<char *>(kFilePtr_) + short_stream_sid_array_[serial_number] * header_.sector_size + header_.sector_size +
           offset;
-    return ptr;
+    return ptr_;
 }
 
 char *ComDocIO::ReadStreamFromSID(int32_t sid, uint64_t len) {
@@ -251,12 +251,12 @@ char *ComDocIO::ReadStreamFromSID(int32_t sid, uint64_t len) {
     uint64_t offset = len % header_.sector_size;
     int32_t current_sid = sid;
     while (current_sid != -2) {
-        ptr = const_cast<char *>(dat) + current_sid * header_.sector_size + header_.sector_size;
+        ptr_ = const_cast<char *>(kFilePtr_) + current_sid * header_.sector_size + header_.sector_size;
         if (serial_number == 0) {
-            memcpy(current_pointer, ptr, offset);
+            memcpy(current_pointer, ptr_, offset);
             return p;
         } else {
-            memcpy(current_pointer, ptr, header_.sector_size);
+            memcpy(current_pointer, ptr_, header_.sector_size);
             current_pointer += header_.sector_size;
             serial_number--;
             current_sid = FindNextSID(current_sid);
@@ -273,12 +273,12 @@ char *ComDocIO::ReadShortStreamFromSID(int32_t ssid, uint32_t len) {
     int32_t current_ssid = ssid;
 
     while (current_ssid != -2) {
-        ptr = GetAddressFromShortSID(current_ssid);
+        ptr_ = GetAddressFromShortSID(current_ssid);
         if (serial_number == 0) {
-            memcpy(current_pointer, ptr, offset);
+            memcpy(current_pointer, ptr_, offset);
             return p;
         } else {
-            memcpy(current_pointer, ptr, header_.short_sector_size);
+            memcpy(current_pointer, ptr_, header_.short_sector_size);
             current_pointer += header_.short_sector_size;
             serial_number--;
             current_ssid = FindNextShortSID(current_ssid);
@@ -295,8 +295,8 @@ void ComDocIO::ConfigureMSATFirstSID() {
 }
 
 void ComDocIO::SearchMSATFirstSID(int32_t sid) {
-    ptr = const_cast<char *>(dat) + sid * header_.sector_size + header_.sector_size;
-    int32_t current_sid = GET_INT32(ptr, header_.sector_size - 4);
+    ptr_ = const_cast<char *>(kFilePtr_) + sid * header_.sector_size + header_.sector_size;
+    int32_t current_sid = GET_INT32(ptr_, header_.sector_size - 4);
     if (current_sid > 0) {
         MSAT_fisrt_sid_array_.push_back(current_sid);
         SearchMSATFirstSID(current_sid);

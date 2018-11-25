@@ -1,19 +1,17 @@
 #pragma once
 
-#include <stdexcept>
-#include <map>
 #include <cstdint>
 #include <boost/iostreams/device/mapped_file.hpp>
 #include "base_data_structure.h"
 
-#define GET_DATA(ptr, off) (((const char *)ptr) + off)
-#define GET_BYTE(ptr, off) (*(const char *)GET_DATA(ptr, off))
-#define GET_INT16(ptr, off) (*(const short *)GET_DATA(ptr, off))
-#define GET_UINT16(ptr, off) (*(const ushort *)GET_DATA(ptr, off))
-#define GET_INT32(ptr, off) (*(const int32_t *)GET_DATA(ptr, off))
-#define GET_UINT32(ptr, off) (*(const uint32_t *)GET_DATA(ptr, off))
-#define GET_INT64(ptr, off) (*(const int64_t *)GET_DATA(ptr, off))
-#define GET_UINT64(ptr, off) (*(const uint64_t *)GET_DATA(ptr, off))
+#define GET_DATA(ptr_, off) (((const char *)ptr_) + off)
+#define GET_BYTE(ptr_, off) (*(const char *)GET_DATA(ptr_, off))
+#define GET_INT16(ptr_, off) (*(const short *)GET_DATA(ptr_, off))
+#define GET_UINT16(ptr_, off) (*(const ushort *)GET_DATA(ptr_, off))
+#define GET_INT32(ptr_, off) (*(const int32_t *)GET_DATA(ptr_, off))
+#define GET_UINT32(ptr_, off) (*(const uint32_t *)GET_DATA(ptr_, off))
+#define GET_INT64(ptr_, off) (*(const int64_t *)GET_DATA(ptr_, off))
+#define GET_UINT64(ptr_, off) (*(const uint64_t *)GET_DATA(ptr_, off))
 
 #define MAKE_UI32(n) n##u
 #define MAKE_UI64(n) n##ull
@@ -63,9 +61,9 @@ namespace compound_doc_io {
 
     public:
         Header header_;
-        const char *dat;
+        const char *kFilePtr_;
         boost::iostreams::mapped_file_source file;
-        char *ptr;
+        char *ptr_;
         std::vector<int32_t> short_stream_sid_array_;
         std::vector<int32_t> SSAT_first_sid_array_;
         std::vector<int32_t> MSAT_fisrt_sid_array_;
