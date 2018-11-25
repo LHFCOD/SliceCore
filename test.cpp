@@ -1,9 +1,12 @@
-
-#include "include/export.h"
-int main()
-{
+#include "src/export.h"
+#include <iostream>
+int main() {
     ComDocIO *io = ReadComDocFile("/home/mi/project/slicePro/sliceapi/data/1.mds");
-    // CommonData block=ReadFromPath(io,"/DSI0/MoticDigitalSlideImage");
+    FileBlock *fileBlock = io->ReadFromPath("/DSI0/MoticDigitalSlideImage");
+    for (int i = 0; i < fileBlock->length_; i++) {
+        std::cout<<fileBlock->pointer_+i;
+    }
+    delete fileBlock;
     ReleaseComDocFile(io);
     return 0;
 }

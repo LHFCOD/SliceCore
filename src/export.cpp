@@ -1,4 +1,4 @@
-#include "../include/export.h"
+#include "export.h"
 ComDocIO *ReadComDocFile(const char *fileName)
 {
 	ComDocIO *io = nullptr;
@@ -22,7 +22,6 @@ void ReleaseComDocFile(ComDocIO *io)
 FileBlock *ReadFromPath(ComDocIO *io, const char *path)
 {
 	FileBlock *pointer = nullptr;
-	// struct CommonData data;
 	try
 	{
 		if (io != nullptr)
@@ -35,13 +34,13 @@ FileBlock *ReadFromPath(ComDocIO *io, const char *path)
 	}
 	return pointer;
 }
-int GetBlockLength(FileBlock *block)
+uint32_t GetBlockLength(FileBlock *block)
 {
 	try
 	{
 		if (block != nullptr)
 		{
-			return block->len;
+			return block->length_;
 		}
 		else
 		{
@@ -53,13 +52,13 @@ int GetBlockLength(FileBlock *block)
 		return 0;
 	}
 }
-unsigned char *GetBlockData(FileBlock *block)
+char *GetBlockData(FileBlock *block)
 {
 	try
 	{
 		if (block != nullptr)
 		{
-			return block->p;
+			return block->pointer_;
 		}
 	}
 	catch (...)

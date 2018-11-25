@@ -18,11 +18,18 @@
             "preLaunchTask": "make-debug",
             "setupCommands": [
                 {
-                    "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
+                    "description": "enable pretty printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "text": "handle SIGPIPE nostop noprint pass",
+                    "description": "ignore SIGPIPE",
                     "ignoreFailures": true
                 }
             ]
-        }
+        },
     ]
+}
+]
 }
