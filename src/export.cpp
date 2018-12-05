@@ -7,10 +7,10 @@ ComDocIO *ReadComDocFile(const char *file_name) {
         io = new ComDocIO(file_name);
     }
     catch (std::exception &ex) {
-        std::cout << "ReadComDocFile exception occur" << ex.what() << std::endl;
+        std::cout << "ReadComDocFile exception occur: " << ex.what() << std::endl;
     }
     catch (...) {
-        std::cout << "Unknown exception occur" << std::endl;
+        std::cout << "Unknown exception occur: " << std::endl;
     }
     return io;
 }
@@ -30,10 +30,10 @@ FileBlock *ReadFromPath(ComDocIO *io, const char *path) {
         }
     }
     catch (std::exception &ex) {
-        std::cout << "ReadFromPath exception occur" << ex.what() << std::endl;
+        std::cout << "ReadFromPath exception occur: " << ex.what() << std::endl;
     }
     catch (...) {
-        std::cout << "Unknown exception occur" << std::endl;
+        std::cout << "Unknown exception occur: " << std::endl;
     }
     return pointer;
 }
@@ -45,10 +45,10 @@ uint32_t GetBlockLength(FileBlock *block) {
         }
     }
     catch (std::exception &ex) {
-        std::cout << "GetBlockLength exception occur" << ex.what() << std::endl;
+        std::cout << "GetBlockLength exception occur: " << ex.what() << std::endl;
     }
     catch (...) {
-        std::cout << "Unknown exception occur" << std::endl;
+        std::cout << "Unknown exception occur: " << std::endl;
     }
     return 0;
 }
@@ -60,10 +60,10 @@ char *GetBlockData(FileBlock *block) {
         }
     }
     catch (std::exception &ex) {
-        std::cout << "GetBlockData exception occur" << ex.what() << std::endl;
+        std::cout << "GetBlockData exception occur: " << ex.what() << std::endl;
     }
     catch (...) {
-        std::cout << "Unknown exception occur" << std::endl;
+        std::cout << "Unknown exception occur: " << std::endl;
     }
     return nullptr;
 }

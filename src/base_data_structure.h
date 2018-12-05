@@ -1,3 +1,11 @@
+/**
+ \* Created with CLion.
+ \* User: lihongfei
+ \* Date: 18-12-5
+ \* Time: 下午3:07
+ \* To change this template use File | Settings | File Templates.
+ \* Description: 文件块结构，表示复合文档中的某一个文件
+ \*/
 #pragma once
 
 #include <stdlib.h>

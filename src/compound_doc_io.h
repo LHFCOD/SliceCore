@@ -1,13 +1,25 @@
+/**
+ \* Created with CLion.
+ \* User: lihongfei
+ \* Date: 18-12-5
+ \* Time: 下午3:07
+ \* To change this template use File | Settings | File Templates.
+ \* Description: 复合文档头文件
+ \*/
 #pragma once
 
 #include <cstdint>
 #include <boost/iostreams/device/mapped_file.hpp>
+#include <boost/algorithm/string.hpp>
 #include "base_data_structure.h"
+#include <string>
+#include <vector>
+#include <algorithm>
 
 #define GET_DATA(ptr_, off) (((const char *)ptr_) + off)
 #define GET_BYTE(ptr_, off) (*(const char *)GET_DATA(ptr_, off))
 #define GET_INT16(ptr_, off) (*(const short *)GET_DATA(ptr_, off))
-#define GET_UINT16(ptr_, off) (*(const ushort *)GET_DATA(ptr_, off))
+#define GET_UINT16(ptr_, off) (*(const unsigned short *)GET_DATA(ptr_, off))
 #define GET_INT32(ptr_, off) (*(const int32_t *)GET_DATA(ptr_, off))
 #define GET_UINT32(ptr_, off) (*(const uint32_t *)GET_DATA(ptr_, off))
 #define GET_INT64(ptr_, off) (*(const int64_t *)GET_DATA(ptr_, off))
@@ -20,9 +32,9 @@ namespace compound_doc_io {
     struct Header {
         char file_id[8];
         char unique_id[16];
-        ushort revision_number;
-        ushort version_number;
-        ushort byte_order;
+        unsigned short revision_number;
+        unsigned short version_number;
+        unsigned short byte_order;
         uint32_t sector_size;
         uint32_t short_sector_size;
         uint32_t sector_number;
@@ -36,7 +48,7 @@ namespace compound_doc_io {
     };
     struct Directory {
         char entry_name[64] = {0};
-        ushort name_size = 0;
+        unsigned short name_size = 0;
         char entry_type;
         char node_color;
         int32_t left_DID;
@@ -66,7 +78,7 @@ namespace compound_doc_io {
         char *ptr_;
         std::vector<int32_t> short_stream_sid_array_;
         std::vector<int32_t> SSAT_first_sid_array_;
-        std::vector<int32_t> MSAT_fisrt_sid_array_;
+        std::vector<int32_t> MSAT_first_sid_array_;
         int sid_count_per_sector_ = 0;
 
         void ConfigureHeader();
@@ -105,8 +117,8 @@ namespace compound_doc_io {
             else if (str1.size() > str2.size())
                 return 1;
             else if (str1.size() == str2.size()) {
-                std::transform(str1.begin(), str1.end(), str1.begin(), static_cast<int (*)(int)>(std::toupper));
-                std::transform(str2.begin(), str2.end(), str2.begin(), static_cast<int (*)(int)>(std::toupper));
+                boost::to_upper(str1);
+                boost::to_upper(str2);
                 if (str1 < str2)
                     return -1;
                 else if (str1 > str2)
